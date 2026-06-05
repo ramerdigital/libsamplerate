@@ -42,11 +42,12 @@ include(CheckLibraryExists)
 include(CheckSymbolExists)
 include(GNUInstallDirs)
 
+include(CTest)
+
 if(DEFINED LIBSAMPLERATE_TESTS)
   message(DEPRECATION "LIBSAMPLERATE_TESTS option deprecated, use BUILD_TESTING option instead.")
   set(BUILD_TESTING ${LIBSAMPLERATE_TESTS})
 endif()
-include(CTest)
 
 add_definitions(-DHAVE_CONFIG_H)
 include_directories(${PROJECT_BINARY_DIR})
@@ -65,6 +66,11 @@ if(NOT (WIN32 OR APPLE OR CYGWIN OR HAIKU OR BEOS))
       endif()
     endif()
   endif()
+endif()
+
+option(LIBSAMPLERATE_SSE2_LRINT "Implement lrintf using SSE2 on x86 CPUs if possible" OFF)
+if(LIBSAMPLERATE_SSE2_LRINT)
+  add_definitions(-DENABLE_SSE2_LRINT)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -91,6 +97,7 @@ endif()
 
 check_include_file(stdbool.h HAVE_STDBOOL_H)
 check_include_file(unistd.h HAVE_UNISTD_H)
+check_include_file(immintrin.h HAVE_IMMINTRIN_H)
 
 # For examples and tests
 
@@ -136,12 +143,5 @@ if(LIBSAMPLERATE_INSTALL)
 endif()
 
 # Packaging support
-
-# See https://cmake.org/cmake/help/v3.12/release/3.12.html#cpack
-if(CMAKE_VERSION VERSION_LESS 3.12)
-  set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-  set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-  set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-endif()
 
 include(CPack)
